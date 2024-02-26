@@ -6,14 +6,11 @@ import kotlin.system.*
 fun main() {
     val time = measureTimeMillis {
         runBlocking {
-            println("Weather forecast")
-            try{
+            runBlocking {
+                println("Weather forecast")
                 println(getWeatherReport())
-            } catch (e: AssertionError) {
-                println("Caught exception in runBlocking(): $e")
-                println("Report unavailable at this time")
+                println("Have a good day!")
             }
-            println("Have a good day!")
         }
     }
     println("Execution time: ${time / 1000.0} seconds")
@@ -21,7 +18,15 @@ fun main() {
 
 suspend fun getWeatherReport() = coroutineScope {
     val forecast = async { getForecast() }
-    val temperature = async { getTemperature() }
+    val temperature = async {
+        try {
+            getTemperature()
+        } catch (e: AssertionError) {
+            println("Caught exception $e")
+            "{ No temperature found }"
+        }
+    }
+
     "${forecast.await()} ${temperature.await()}"
 }
 
